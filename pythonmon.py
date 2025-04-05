@@ -89,13 +89,26 @@ while active_pythonmon is None:
 print(active_pythonmon)
 
 while game_over == False:
-    command = input('[C]harge energy, [A]ttack or [F]orfit: ')
+    command = input('[C]harge energy, [A]ttack or [F]orfeit: ')
     if command.lower() in ['c', 'charge', 'charge energy']:
+        print('-----------------')
         print(f'{active_pythonmon._name} is charging energy..')
+        print('-----------------')
+
         active_pythonmon.charge()
-    elif command.lower() in ['a', 'atk', 'attack']:
-        print(active_pythonmon.attack())
         
+    elif command.lower() in ['a', 'atk', 'attack']:
+        print('-----------------')
+        print(active_pythonmon.attack())
+        print('-----------------')
+
+    elif command.lower() in ['f', 'forfeit']:
+        print('-----------------')
+        print('You lose!')
+        print('-----------------')
+        game_over = True
+        break
+    
     print(active_pythonmon)
 
 
