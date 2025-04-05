@@ -34,6 +34,11 @@ class Deck():
         self._cards = self._cards[:-5]
         return Hand(hand_cards)
     
+    def deal_card(self, hand):
+        hand_card = self._cards[-1]
+        self._cards = self._cards[:-1]
+        hand._cards.append(hand_card)
+        
 
 class Hand():
 
@@ -41,17 +46,14 @@ class Hand():
         self._cards = cards
 
     def __str__(self):
-        str = "Cards in hand:\n"
+        str = f"{len(self._cards)} Cards in hand:\n"
         str += "--------------\n"
         for card in self._cards:
             str += card._name + '\n'
         return str
 
 
-deck = Deck()
-hand = deck.deal_hand()
-print(hand)
-print(deck)
+
 
 
 
