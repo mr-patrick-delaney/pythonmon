@@ -28,13 +28,33 @@ class Pythonmon():
     def charge(self):
         self.energy +=1
     
-    def attack(self):
+    def attack(self,opponent):
+        attack = {
+            'message': None,
+            'dmg': None,
+            'effective': None
+        }
+
+        strengths = {
+            'Fire': 'Grass',
+            'Water': 'Fire',
+            'Grass': 'Water'
+        }
+
         if self.energy >= self._atk_energy:
             self.energy -= self._atk_energy
-            return f'{active_pythonmon._name} used {active_pythonmon._atk_name}!'
+            attack['message'] = f'{active_pythonmon._name} used {active_pythonmon._atk_name}!'
+            
+            if strengths[self._type] == opponent._type:
+                attack['dmg'] = self._atk_dmg*2
+                attack['effective'] = '[purple bold]It\'s super effective![/purple bold]'
+            else:
+                attack['dmg'] = self._atk_dmg
         else:
-            return '[yellow]Insufficient energy![/yellow]'
-    
+            attack['message'] = '[yellow]Insufficient energy![/yellow]'
+        
+        return attack
+
     def get_color(self):
         color_types = {
             'Fire': 'red',
@@ -42,18 +62,6 @@ class Pythonmon():
             'Grass': 'green'
         }
         return color_types[self._type]
-    
-    def get_damage(self, opponent):
-        strengths = {
-            'Fire': 'Grass',
-            'Water': 'Fire',
-            'Grass': 'Water'
-        }
-
-        if strengths[self._type] == opponent._type:
-            return (self._atk_dmg * 2, '[purple bold]It\'s super effective![/purple bold]')
-        return (self._atk_dmg,"")
-    
     
 class Deck():
 
@@ -89,9 +97,10 @@ class Hand():
 
     
     def play_card(self,name):
-        for card in self._cards:
-            if card._name == name:
-                return card
+        for index, card in enumerate(self._cards):
+            if card._name.lower() == name.lower():
+                return self._cards.pop(index)
+            
                 
             
 print('Welcome to Pythonmon!')
@@ -114,12 +123,12 @@ color = active_pythonmon.get_color()
 
 while game_over == False:
 
-    print('[green]YOUR CARD:[/green]')
+    print('[green]YOUR ACTIVE CARD:[/green]')
     print(active_pythonmon)
-    print('[red]OPPONENT CARD[/red]')
+    print('[red]OPPONENT ACTIVE CARD[/red]')
     print(cpu_pythonmon)
 
-    command = input('[C]harge energy, [A]ttack or [F]orfeit: ')
+    command = input('[C]harge Energy, [A]ttack, [V]iew Hand, [D]raw Card or [F]orfeit: ')
     if command.lower() in ['c', 'charge', 'charge energy']:
         print('-----------------')
         print(f'[yellow]{active_pythonmon._name} is charging energy...[/yellow]')
@@ -129,20 +138,34 @@ while game_over == False:
         
     elif command.lower() in ['a', 'atk', 'attack']:
         print('-----------------')
-        print(f'[{color}]{active_pythonmon.attack()} [/{color}]')
-        damage = active_pythonmon.get_damage(cpu_pythonmon)
-        cpu_pythonmon._hp -= damage[0]
-        if damage[1]:
-            print(damage[1])
+        attack = active_pythonmon.attack(cpu_pythonmon)
+        print(f'[{color}]{attack['message']}[/{color}]')
+
+        if attack['dmg']:
+            cpu_pythonmon._hp -= attack['dmg']
+
+        if attack['effective']:
+            print(attack['effective'])
         print('-----------------')
 
+    elif command.lower() in ('v', 'view', 'view hand'):
+        print('[green]CURRENT HAND[/green]')
+        print(hand)
+
+    elif command.lower() in ['d', 'draw', 'draw card']:
+        if len(hand._cards) < 5:
+            deck.deal_card(hand)
+            print('-----------------')
+            print(f'Drew {hand._cards[-1]._name} - {hand._cards[-1]._type} type Pythonmon')
+            print('-----------------')
+        else:
+            print('-----------------')
+            print('[red]Cannot have more than 5 cards in hand![/red]')
+            print('-----------------')
+    
     elif command.lower() in ['f', 'forfeit']:
         print('-----------------')
         print('You lose!')
         print('-----------------')
         game_over = True
         break
-
-
-
-
