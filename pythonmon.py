@@ -126,6 +126,7 @@ while active_pythonmon is None:
 
 
 cpu_pythonmon = sample(cpu_hand._cards,1)[0]
+cpu_hand._cards.remove(cpu_pythonmon)
 
 cpu_color = cpu_pythonmon.get_color()
 
@@ -141,6 +142,7 @@ while game_over == False:
     if command.lower() in ['c', 'charge', 'charge energy']:
         print('-----------------')
         print(f'[yellow]{active_pythonmon._name} is charging energy...[/yellow]')
+        play_file('sounds/fx073.mp3')
         print('-----------------')
 
         active_pythonmon.charge()
@@ -152,10 +154,10 @@ while game_over == False:
 
         if attack['dmg']:
             cpu_pythonmon._hp -= attack['dmg']
-            play_file('sounds/'+active_pythonmon._sound)
 
-        if attack['effective']:
-            print(attack['effective'])
+            if attack['effective']:
+                print(attack['effective'])
+            play_file('sounds/'+active_pythonmon._sound)
         print('-----------------')
 
     elif command.lower() in ('v', 'view', 'view hand'):
@@ -186,10 +188,12 @@ while game_over == False:
         play_file('sounds/'+cpu_pythonmon._sound)
         print('-----------------')
         score +=1
-        cpu_pythonmon = sample(cpu_hand._cards,1)[0]
-        print(f'Opponent plays [bold]{cpu_pythonmon._name}![/bold]')
-        play_file('sounds/'+cpu_pythonmon._sound)
-        print('-----------------')
+        if score < 3:
+            cpu_pythonmon = sample(cpu_hand._cards,1)[0]
+            cpu_hand._cards.remove(cpu_pythonmon)
+            print(f'Opponent plays [bold]{cpu_pythonmon._name}![/bold]')
+            play_file('sounds/'+cpu_pythonmon._sound)
+            print('-----------------')
     
     if score == 3:
         print('-----------------')
