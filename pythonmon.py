@@ -6,6 +6,8 @@ from rich import print
 active_pythonmon = None
 cpu_pythonmon = None
 game_over = False
+score = 0
+cpu_score = 0
 
 class Pythonmon():
     
@@ -110,12 +112,13 @@ cpu_deck = Deck()
 print('Dealing hands...')
 hand = deck.deal_hand()
 cpu_hand = cpu_deck.deal_hand()
+print(cpu_hand)
 print(hand)
 
 while active_pythonmon is None:
     active_pythonmon = hand.play_card(input('Choose a Pythonmon to play: '))
 
-cpu_pythonmon = sample(cpu_deck._cards,1)[0]
+cpu_pythonmon = sample(cpu_hand._cards,1)[0]
 
 cpu_color = cpu_pythonmon.get_color()
 
@@ -168,4 +171,25 @@ while game_over == False:
         print('You lose!')
         print('-----------------')
         game_over = True
+        break
+
+    if cpu_pythonmon._hp < 1:
+        print('-----------------')
+        print(f'[bold]{cpu_pythonmon._name} fainted...[/bold]')
+        print('-----------------')
+        score +=1
+        cpu_pythonmon = sample(cpu_hand._cards,1)[0]
+        print(f'Opponent plays [bold]{cpu_pythonmon._name}![/bold]')
+        print('-----------------')
+    
+    if score == 3:
+        print('-----------------')
+        print('You WIN!')
+        print('-----------------')
+        break
+
+    elif cpu_score == 3:
+        print('-----------------')
+        print('You lose')
+        print('-----------------')
         break
