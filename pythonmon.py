@@ -1,5 +1,8 @@
 from pythonmon_data import pythonmon_data
 from random import sample
+from tabulate import tabulate
+
+active_pythonmon = None
 
 class Pythonmon():
     
@@ -14,7 +17,10 @@ class Pythonmon():
         self.energy = 0
 
     def __str__(self):
-        return f'{self._name} - {self._type} Type Pythonmon'
+        table = []
+        headers = ['Name', 'Type', 'HP', 'Def', 'Attack', 'Dmg', 'Atk Energy', 'Energy']
+        table.append([self._name, self._type, self._hp, self._defense, self._atk_name, self._atk_dmg, self._atk_energy,self.energy])
+        return tabulate(table,headers=headers,tablefmt='grid')
 
     def charge(self):
         self.energy +=1
@@ -46,15 +52,33 @@ class Hand():
         self._cards = cards
 
     def __str__(self):
-        str = f"{len(self._cards)} Cards in hand:\n"
-        str += "--------------\n"
+        table = []
+        headers = ['Name', 'Type', 'HP', 'Def', 'Attack', 'Dmg', 'Atk Energy']
         for card in self._cards:
-            str += card._name + '\n'
-        return str
+            table.append([card._name, card._type, card._hp, card._defense, card._atk_name, card._atk_dmg, card._atk_energy])
+        return tabulate(table,headers=headers,tablefmt='grid')
+
+    
+    def play_card(self,name):
+        for card in self._cards:
+            if card._name == name:
+                return card
+                
+            
 
 
+deck = Deck()
+hand = deck.deal_hand()
 
-
+print('Welcome to Pythonmon!')
+print('Drawing deck...')
+deck = Deck()
+print('Dealing hand...')
+hand = deck.deal_hand()
+print(hand)
+while active_pythonmon is None:
+    active_pythonmon = hand.play_card(input('Choose a Pythonmon to play: '))
+print(active_pythonmon)
 
 
 
