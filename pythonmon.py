@@ -1,6 +1,7 @@
 from pythonmon_data import pythonmon_data
 from random import sample
 from tabulate import tabulate
+from rich import print
 
 active_pythonmon = None
 game_over = False
@@ -31,7 +32,15 @@ class Pythonmon():
             self.energy -= self._atk_energy
             return f'{active_pythonmon._name} used {active_pythonmon._atk_name}!'
         else:
-            return 'Insufficient energy!'
+            return '[yellow]Insufficient energy![/yellow]'
+    
+    def get_color(self):
+        color_types = {
+            'Fire': 'red',
+            'Water': 'blue',
+            'Grass': 'green'
+        }
+        return color_types[self._type]
     
     
 class Deck():
@@ -86,20 +95,23 @@ hand = deck.deal_hand()
 print(hand)
 while active_pythonmon is None:
     active_pythonmon = hand.play_card(input('Choose a Pythonmon to play: '))
+
+color = active_pythonmon.get_color()
+
 print(active_pythonmon)
 
 while game_over == False:
     command = input('[C]harge energy, [A]ttack or [F]orfeit: ')
     if command.lower() in ['c', 'charge', 'charge energy']:
         print('-----------------')
-        print(f'{active_pythonmon._name} is charging energy..')
+        print(f'[yellow]{active_pythonmon._name} is charging energy...[/yellow]')
         print('-----------------')
 
         active_pythonmon.charge()
         
     elif command.lower() in ['a', 'atk', 'attack']:
         print('-----------------')
-        print(active_pythonmon.attack())
+        print(f'[{color}]{active_pythonmon.attack()} [/{color}]')
         print('-----------------')
 
     elif command.lower() in ['f', 'forfeit']:
