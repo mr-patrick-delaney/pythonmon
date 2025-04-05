@@ -4,6 +4,7 @@ from tabulate import tabulate
 from rich import print
 
 active_pythonmon = None
+cpu_pythonmon = None
 game_over = False
 
 class Pythonmon():
@@ -82,25 +83,31 @@ class Hand():
                 return card
                 
             
-
-
-deck = Deck()
-hand = deck.deal_hand()
-
 print('Welcome to Pythonmon!')
-print('Drawing deck...')
+print('Drawing decks...')
 deck = Deck()
-print('Dealing hand...')
+cpu_deck = Deck()
+print('Dealing hands...')
 hand = deck.deal_hand()
+cpu_hand = cpu_deck.deal_hand()
 print(hand)
+
 while active_pythonmon is None:
     active_pythonmon = hand.play_card(input('Choose a Pythonmon to play: '))
 
+cpu_pythonmon = sample(cpu_deck._cards,1)[0]
+
+cpu_color = cpu_pythonmon.get_color()
+
 color = active_pythonmon.get_color()
 
-print(active_pythonmon)
-
 while game_over == False:
+
+    print('[green]YOUR CARD:[/green]')
+    print(active_pythonmon)
+    print('[red]OPPONENT CARD[/red]')
+    print(cpu_pythonmon)
+    
     command = input('[C]harge energy, [A]ttack or [F]orfeit: ')
     if command.lower() in ['c', 'charge', 'charge energy']:
         print('-----------------')
@@ -112,6 +119,7 @@ while game_over == False:
     elif command.lower() in ['a', 'atk', 'attack']:
         print('-----------------')
         print(f'[{color}]{active_pythonmon.attack()} [/{color}]')
+        cpu_pythonmon._hp -= active_pythonmon._atk_dmg
         print('-----------------')
 
     elif command.lower() in ['f', 'forfeit']:
@@ -120,8 +128,6 @@ while game_over == False:
         print('-----------------')
         game_over = True
         break
-    
-    print(active_pythonmon)
 
 
 
