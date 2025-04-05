@@ -43,6 +43,17 @@ class Pythonmon():
         }
         return color_types[self._type]
     
+    def get_damage(self, opponent):
+        strengths = {
+            'Fire': 'Grass',
+            'Water': 'Fire',
+            'Grass': 'Water'
+        }
+
+        if strengths[self._type] == opponent._type:
+            return (self._atk_dmg * 2, '[purple bold]It\'s super effective![/purple bold]')
+        return (self._atk_dmg,"")
+    
     
 class Deck():
 
@@ -107,7 +118,7 @@ while game_over == False:
     print(active_pythonmon)
     print('[red]OPPONENT CARD[/red]')
     print(cpu_pythonmon)
-    
+
     command = input('[C]harge energy, [A]ttack or [F]orfeit: ')
     if command.lower() in ['c', 'charge', 'charge energy']:
         print('-----------------')
@@ -119,7 +130,10 @@ while game_over == False:
     elif command.lower() in ['a', 'atk', 'attack']:
         print('-----------------')
         print(f'[{color}]{active_pythonmon.attack()} [/{color}]')
-        cpu_pythonmon._hp -= active_pythonmon._atk_dmg
+        damage = active_pythonmon.get_damage(cpu_pythonmon)
+        cpu_pythonmon._hp -= damage[0]
+        if damage[1]:
+            print(damage[1])
         print('-----------------')
 
     elif command.lower() in ['f', 'forfeit']:
