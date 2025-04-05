@@ -31,6 +31,7 @@ class Pythonmon():
 
     def charge(self):
         self.energy +=1
+        return f'[yellow]{self._name} is charging energy...[/yellow]'
     
     def attack(self,opponent):
         attack = {
@@ -47,7 +48,7 @@ class Pythonmon():
 
         if self.energy >= self._atk_energy:
             self.energy -= self._atk_energy
-            attack['message'] = f'{active_pythonmon._name} used {active_pythonmon._atk_name}!'
+            attack['message'] = f'{self._name} used {self._atk_name}!'
             
             if strengths[self._type] == opponent._type:
                 attack['dmg'] = self._atk_dmg*2
@@ -114,15 +115,17 @@ cpu_deck = Deck()
 print('Dealing hands...')
 hand = deck.deal_hand()
 cpu_hand = cpu_deck.deal_hand()
-print(cpu_hand)
 print(hand)
 
 while active_pythonmon is None:
     active_pythonmon = hand.play_card(input('Choose a Pythonmon to play: '))
-    print('-----------------')
-    print(f'You play [bold]{active_pythonmon._name}![/bold]')
-    print('-----------------')
-    play_file('sounds/'+active_pythonmon._sound,block=False)
+    try:
+        print('-----------------')
+        print(f'You play [bold]{active_pythonmon._name}![/bold]')
+        print('-----------------')
+        play_file('sounds/'+active_pythonmon._sound,block=False)
+    except:
+        continue
 
 
 cpu_pythonmon = sample(cpu_hand._cards,1)[0]
@@ -141,11 +144,9 @@ while game_over == False:
     command = input('[C]harge Energy, [A]ttack, [V]iew Hand, [D]raw Card or [F]orfeit: ')
     if command.lower() in ['c', 'charge', 'charge energy']:
         print('-----------------')
-        print(f'[yellow]{active_pythonmon._name} is charging energy...[/yellow]')
+        print(active_pythonmon.charge())
         play_file('sounds/fx073.mp3')
         print('-----------------')
-
-        active_pythonmon.charge()
         
     elif command.lower() in ['a', 'atk', 'attack']:
         print('-----------------')
@@ -195,6 +196,27 @@ while game_over == False:
             play_file('sounds/'+cpu_pythonmon._sound)
             print('-----------------')
     
+    if cpu_pythonmon.energy < cpu_pythonmon._atk_energy:
+        print('-----------------')
+        print(f'[red bold]Opponent Pythonmon:[/red bold] {cpu_pythonmon.charge()}')
+        print('-----------------')
+        play_file('sounds/fx073.mp3')
+
+    elif cpu_pythonmon.energy == cpu_pythonmon._atk_energy:
+        print('-----------------')
+        attack = cpu_pythonmon.attack(active_pythonmon)
+        print(f'[red bold]Opponent Pythonmon: [/red bold][{color}]{attack['message']}[/{color}]')
+
+        if attack['dmg']:
+            active_pythonmon._hp -= attack['dmg']
+
+            if attack['effective']:
+                print(attack['effective'])
+            play_file('sounds/'+cpu_pythonmon._sound)
+        print('-----------------')
+
+    #add in faiting condition for active pythonmon 
+
     if score == 3:
         print('-----------------')
         print('You WIN!')
