@@ -26,6 +26,13 @@ class Pythonmon():
     def charge(self):
         self.energy +=1
     
+    def attack(self):
+        if self.energy >= self._atk_energy:
+            self.energy -= self._atk_energy
+            return f'{active_pythonmon._name} used {active_pythonmon._atk_name}!'
+        else:
+            return 'Insufficient energy!'
+    
     
 class Deck():
 
@@ -85,8 +92,10 @@ while game_over == False:
     command = input('[C]harge energy, [A]ttack or [F]orfit: ')
     if command.lower() in ['c', 'charge', 'charge energy']:
         print(f'{active_pythonmon._name} is charging energy..')
-        active_pythonmon.energy += 1
-    
+        active_pythonmon.charge()
+    elif command.lower() in ['a', 'atk', 'attack']:
+        print(active_pythonmon.attack())
+        
     print(active_pythonmon)
 
 
