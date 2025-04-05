@@ -3,6 +3,7 @@ from random import sample
 from tabulate import tabulate
 
 active_pythonmon = None
+game_over = False
 
 class Pythonmon():
     
@@ -80,7 +81,13 @@ while active_pythonmon is None:
     active_pythonmon = hand.play_card(input('Choose a Pythonmon to play: '))
 print(active_pythonmon)
 
-
+while game_over == False:
+    command = input('[C]harge energy, [A]ttack or [F]orfit: ')
+    if command.lower() in ['c', 'charge', 'charge energy']:
+        print(f'{active_pythonmon._name} is charging energy..')
+        active_pythonmon.energy += 1
+    
+    print(active_pythonmon)
 
 
 
