@@ -28,11 +28,17 @@ class Deck():
     
     def __str__(self):
         return f'Deck of {len(self._cards)} Pythonmon Cards'
+    
+    def deal_hand(self):
+        hand_cards = self._cards[-5:]
+        self._cards = self._cards[:-5]
+        return Hand(hand_cards)
+    
 
-class Hand(Deck):
+class Hand():
 
-    def __init__(self,deck):
-        self._cards = deck._cards[-5:]
+    def __init__(self, cards):
+        self._cards = cards
 
     def __str__(self):
         str = "Cards in hand:\n"
@@ -40,11 +46,12 @@ class Hand(Deck):
         for card in self._cards:
             str += card._name + '\n'
         return str
-    
+
 
 deck = Deck()
-hand = Hand(deck)
+hand = deck.deal_hand()
 print(hand)
+print(deck)
 
 
 
