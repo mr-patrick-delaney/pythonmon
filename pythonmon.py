@@ -24,15 +24,29 @@ class Deck():
 
     def __init__(self):
         data = sample(pythonmon_data,20)
-        self.cards = [Pythonmon(*datum) for datum in data]
+        self._cards = [Pythonmon(*datum) for datum in data]
     
     def __str__(self):
-        return f'Deck of {len(deck.cards)} Pythonmon Cards'
+        return f'Deck of {len(self._cards)} Pythonmon Cards'
+
+class Hand(Deck):
+
+    def __init__(self,deck):
+        self._cards = deck._cards[-5:]
+
+    def __str__(self):
+        str = "Cards in hand:\n"
+        str += "--------------\n"
+        for card in self._cards:
+            str += card._name + '\n'
+        return str
+    
 
 deck = Deck()
-print(deck)
-for card in deck.cards:
-    print(card)
+hand = Hand(deck)
+print(hand)
+
+
 
 
 
