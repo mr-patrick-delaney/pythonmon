@@ -1,10 +1,5 @@
+from pythonmon_data import pythonmon_data
 from random import sample
-
-pythonmon_data = [
-    ['Scanpan', 'Fire', 30, 2, 'Fire Blast', 5, 2],
-    ['Basmati', 'Water', 35, 2, 'Water Jet', 4, 2]
-]
-
 
 class Pythonmon():
     
@@ -28,7 +23,7 @@ class Pythonmon():
 class Deck():
 
     def __init__(self):
-        data = sample(pythonmon_data,2)
+        data = sample(pythonmon_data,20)
         self.cards = [Pythonmon(*datum) for datum in data]
     
     def __str__(self):
@@ -36,8 +31,8 @@ class Deck():
 
 deck = Deck()
 print(deck)
-print(deck.cards[0])
-print(deck.cards[1])
+for card in deck.cards:
+    print(card)
 
 
 
