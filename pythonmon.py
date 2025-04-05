@@ -2,6 +2,7 @@ from pythonmon_data import pythonmon_data
 from random import sample
 from tabulate import tabulate
 from rich import print
+from play_sounds import play_file
 
 active_pythonmon = None
 cpu_pythonmon = None
@@ -11,7 +12,7 @@ cpu_score = 0
 
 class Pythonmon():
     
-    def __init__(self, name, type, hp, defense, atk_name, atk_dmg, atk_energy):
+    def __init__(self, name, type, hp, defense, atk_name, atk_dmg, atk_energy, sound):
         self._name = name
         self._type = type
         self._hp = hp
@@ -19,6 +20,7 @@ class Pythonmon():
         self._atk_name = atk_name
         self._atk_dmg = atk_dmg
         self._atk_energy = atk_energy
+        self._sound = sound
         self.energy = 0
 
     def __str__(self):
@@ -117,6 +119,11 @@ print(hand)
 
 while active_pythonmon is None:
     active_pythonmon = hand.play_card(input('Choose a Pythonmon to play: '))
+    print('-----------------')
+    print(f'You play [bold]{active_pythonmon._name}![/bold]')
+    print('-----------------')
+    play_file('sounds/'+active_pythonmon._sound,block=False)
+
 
 cpu_pythonmon = sample(cpu_hand._cards,1)[0]
 
@@ -125,7 +132,6 @@ cpu_color = cpu_pythonmon.get_color()
 color = active_pythonmon.get_color()
 
 while game_over == False:
-
     print('[green]YOUR ACTIVE CARD:[/green]')
     print(active_pythonmon)
     print('[red]OPPONENT ACTIVE CARD[/red]')
@@ -146,6 +152,7 @@ while game_over == False:
 
         if attack['dmg']:
             cpu_pythonmon._hp -= attack['dmg']
+            play_file('sounds/'+active_pythonmon._sound)
 
         if attack['effective']:
             print(attack['effective'])
@@ -176,10 +183,12 @@ while game_over == False:
     if cpu_pythonmon._hp < 1:
         print('-----------------')
         print(f'[bold]{cpu_pythonmon._name} fainted...[/bold]')
+        play_file('sounds/'+cpu_pythonmon._sound)
         print('-----------------')
         score +=1
         cpu_pythonmon = sample(cpu_hand._cards,1)[0]
         print(f'Opponent plays [bold]{cpu_pythonmon._name}![/bold]')
+        play_file('sounds/'+cpu_pythonmon._sound)
         print('-----------------')
     
     if score == 3:
