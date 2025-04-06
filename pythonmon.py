@@ -138,7 +138,7 @@ def main():
     cpu_hand.cards.remove(cpu_pythonmon)
 
     #start game loop
-    while game_over == False:
+    while not game_over:
 
         #check game over conditions - end game if true
         if score == 3:
@@ -159,7 +159,7 @@ def main():
         print(cpu_pythonmon)
 
         #get turn command from player
-        command = input('[C]harge Energy, [A]ttack, [V]iew Hand, [D]raw Card or [F]orfeit: ')
+        command = input('[C]harge Energy, [A]ttack, [V]iew Hand, [S]witch Pythonmon, [D]raw Card or [F]orfeit: ')
 
         #charge active pythonmon energy
         if command.lower() in ['c', 'charge', 'charge energy']:
@@ -188,6 +188,23 @@ def main():
         elif command.lower() in ('v', 'view', 'view hand'):
             print('[green]CURRENT HAND[/green]')
             print(hand)
+        
+        #switch active pythonmon
+        elif command.lower() in ('s', 'switch', 'switch pythonmon'):
+            print(f'[bold]{active_pythonmon.name} return![/bold]')
+            hand.cards.append(active_pythonmon)
+            active_pythonmon = None
+            print('[green]CURRENT HAND[/green]')
+            print(hand)
+            while active_pythonmon is None:
+                active_pythonmon = hand.play_card(input('Choose a Pythonmon to play: '))
+                try:
+                    print('-----------------')
+                    print(f'You play [bold]{active_pythonmon.name}![/bold]')
+                    print('-----------------')
+                    play_file('sounds/'+active_pythonmon.sound,block=False)
+                except:
+                    continue
 
         #draw card from deck and add to hand if hand is less than 5 cards currently
         elif command.lower() in ['d', 'draw', 'draw card']:
