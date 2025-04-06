@@ -100,17 +100,9 @@ class Hand():
         for index, card in enumerate(self.cards):
             if card.name.lower() == name.lower():
                 return self.cards.pop(index)
-            
 
-def main():
-    #define game variables
-    active_pythonmon = None
-    cpu_pythonmon = None
-    game_over = False
-    score = 0
-    cpu_score = 0
 
-    #game introduction and setup        
+def initialise_game():
     print('Welcome to Pythonmon!')
     print('Drawing decks...')
     deck = Deck()
@@ -118,20 +110,51 @@ def main():
     print('Dealing hands...')
     hand = deck.deal_hand()
     cpu_hand = cpu_deck.deal_hand()
+    return deck, hand, cpu_hand
+
+def select_pythonmon(hand):
+        selected = hand.play_card(input('Choose a Pythonmon to play: '))
+        try:
+            print('-----------------')
+            print(f'You play [bold]{selected.name}![/bold]')
+            print('-----------------')
+            play_file('sounds/'+selected.sound,block=False)
+        except:
+            pass
+        else:
+            return selected
+
+def check_game_over(score,cpu_score):
+    if score == 3:
+        print('-----------------')
+        print('You WIN!')
+        print('-----------------')
+        return True
+    elif cpu_score == 3:
+        print('-----------------')
+        print('You lose')
+        print('-----------------')
+        return True
+    return False
+
+
+def main():
+    #initialise game variables
+    active_pythonmon = None
+    cpu_pythonmon = None
+    game_over = False
+    score = 0
+    cpu_score = 0
+
+    #intialise player and cpu decks and hands
+    deck, hand, cpu_hand = initialise_game()
 
     #show current hand to player
     print(hand)
 
     #player selects active pythonmon from hand
     while active_pythonmon is None:
-        active_pythonmon = hand.play_card(input('Choose a Pythonmon to play: '))
-        try:
-            print('-----------------')
-            print(f'You play [bold]{active_pythonmon.name}![/bold]')
-            print('-----------------')
-            play_file('sounds/'+active_pythonmon.sound,block=False)
-        except:
-            continue
+        active_pythonmon = select_pythonmon(hand)
 
     #cpu randomly chooses active pythonmon from hand
     cpu_pythonmon = sample(cpu_hand.cards,1)[0]
@@ -140,18 +163,11 @@ def main():
     #start game loop
     while not game_over:
 
-        #check game over conditions - end game if true
-        if score == 3:
-            print('-----------------')
-            print('You WIN!')
-            print('-----------------')
-            break
-        elif cpu_score == 3:
-            print('-----------------')
-            print('You lose')
-            print('-----------------')
+        #check game over conditions before player turn, end game if true
+        if check_game_over(score, cpu_score):
             break
         
+        #PLAYER turn
         #display active and opponent active cards
         print('[green]YOUR ACTIVE CARD:[/green]')
         print(active_pythonmon)
@@ -197,14 +213,7 @@ def main():
             print('[green]CURRENT HAND[/green]')
             print(hand)
             while active_pythonmon is None:
-                active_pythonmon = hand.play_card(input('Choose a Pythonmon to play: '))
-                try:
-                    print('-----------------')
-                    print(f'You play [bold]{active_pythonmon.name}![/bold]')
-                    print('-----------------')
-                    play_file('sounds/'+active_pythonmon.sound,block=False)
-                except:
-                    continue
+                active_pythonmon = select_pythonmon(hand)
 
         #draw card from deck and add to hand if hand is less than 5 cards currently
         elif command.lower() in ['d', 'draw', 'draw card']:
@@ -242,6 +251,10 @@ def main():
                 play_file('sounds/'+cpu_pythonmon.sound)
                 print('-----------------')
         
+        #check game over conditions before CPU turn, end game if true
+        if check_game_over(score, cpu_score):
+            break
+
         #CPU turn
         #opponent pythonmon charges energy if not enough energy to attack
         if cpu_pythonmon.energy < cpu_pythonmon.atk_energy:
