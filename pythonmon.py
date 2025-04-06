@@ -27,15 +27,12 @@ class Pythonmon():
 
     def charge(self):
         self.energy +=1
-        return f'[yellow]{self.name} is charging energy...[/yellow]'
+        print('-----------------')
+        print(f'[yellow]{self.name} is charging energy...[/yellow]')
+        play_file('sounds/fx073.mp3')
+        print('-----------------')
     
     def attack(self,opponent):
-        attack = {
-            'message': None,
-            'dmg': None,
-            'effective': None
-        }
-
         strengths = {
             'Fire': 'Grass',
             'Water': 'Fire',
@@ -44,17 +41,17 @@ class Pythonmon():
 
         if self.energy >= self.atk_energy:
             self.energy -= self.atk_energy
-            attack['message'] = f'{self.name} used {self.atk_name}!'
+            print('-----------------')
+            print(f'[{self.color}]{self.name} used {self.atk_name}![/{self.color}]')
             
             if strengths[self._type] == opponent._type:
-                attack['dmg'] = (self._atk_dmg*2) - opponent._defense
-                attack['effective'] = '[purple bold]It\'s super effective![/purple bold]'
+                opponent.hp -= (self._atk_dmg*2) - opponent._defense
+                print('[purple bold]It\'s super effective![/purple bold]')
             else:
-                attack['dmg'] = self._atk_dmg - opponent._defense
+                opponent.hp -= self._atk_dmg - opponent._defense
+            play_file('sounds/'+self.sound)
         else:
-            attack['message'] = '[yellow]Insufficient energy![/yellow]'
-        
-        return attack
+            print('[yellow]Insufficient energy![/yellow]')
 
     def _get_color(self):
         color_types = {
@@ -79,9 +76,18 @@ class Deck():
         return Hand(hand_cards)
     
     def deal_card(self, hand):
-        hand_card = self._cards[-1]
-        self._cards = self._cards[:-1]
-        hand._cards.append(hand_card)
+        if len(hand.cards) < 4:
+            hand_card = self._cards[-1]
+            self._cards = self._cards[:-1]
+            hand.cards.append(hand_card)
+            print('-----------------')
+            print(f'Drew {hand.cards[-1].name}!')
+            print(hand.cards[-1])
+            print('-----------------')
+        else:
+            print('-----------------')
+            print('[red]Cannot have more than 5 cards in hand![/red]')
+            print('-----------------')
         
 
 class Hand():
@@ -113,16 +119,17 @@ def initialise_game():
     return deck, hand, cpu_hand
 
 def select_pythonmon(hand):
-        selected = hand.play_card(input('Choose a Pythonmon to play: '))
-        try:
-            print('-----------------')
-            print(f'You play [bold]{selected.name}![/bold]')
-            print('-----------------')
-            play_file('sounds/'+selected.sound,block=False)
-        except:
-            pass
-        else:
-            return selected
+        while True:
+            selected = hand.play_card(input('Choose a Pythonmon to play: '))
+            try:
+                print('-----------------')
+                print(f'You play [bold]{selected.name}![/bold]')
+                print('-----------------')
+                play_file('sounds/'+selected.sound,block=False)
+            except:
+                continue
+            else:
+                return selected
 
 def check_game_over(score,cpu_score):
     if score == 3:
@@ -136,6 +143,95 @@ def check_game_over(score,cpu_score):
         print('-----------------')
         return True
     return False
+
+def switch_pythonmon(active_pythonmon, hand):
+    print(f'[bold]{active_pythonmon.name} return![/bold]')
+    hand.cards.append(active_pythonmon)
+    print('[green]CURRENT HAND[/green]')
+    print(hand)
+    return select_pythonmon(hand)
+
+
+def player_turn(player, opponent, hand, deck):
+    #display active and opponent active cards
+    print('[green]YOUR ACTIVE CARD:[/green]')
+    print(player)
+    print('[red]OPPONENT ACTIVE CARD[/red]')
+    print(opponent)
+
+    #get turn command from player
+    VALID_COMMANDS = ('c', 'charge', 'charge energy','a', 'atk', 'attack','s', 'switch', 'switch pythonmon','d', 'draw', 'draw card','f', 'forfeit')
+    command = ""
+    while command not in VALID_COMMANDS:
+        command = input('[C]harge Energy, [A]ttack, [S]witch Pythonmon, [D]raw Card or [F]orfeit: ')
+
+    #charge active pythonmon energy
+    if command.lower() in ['c', 'charge', 'charge energy']:
+        player.charge()
+
+    #call attack method on opponent
+    elif command.lower() in ['a', 'atk', 'attack']:
+        player.attack(opponent)
+    
+    #switch active pythonmon
+    elif command.lower() in ('s', 'switch', 'switch pythonmon'):
+        player = switch_pythonmon(player,hand)
+
+    #draw card from deck and add to hand if hand is less than 5 cards currently
+    elif command.lower() in ['d', 'draw', 'draw card']:
+        deck.deal_card(hand)
+    
+    #forfeit game - return True to game_over
+    elif command.lower() in ['f', 'forfeit']:
+        print('-----------------')
+        print('You lose!')
+        print('-----------------')
+        return True, player
+    
+    #else return False to game_over to continue the game
+    return False, player
+
+def check_cpu_fainted(pythonmon,cpu_hand,score):
+    if pythonmon.hp < 1:
+        print('-----------------')
+        print(f'[bold]{pythonmon.name} fainted...[/bold]')
+        play_file('sounds/'+pythonmon.sound)
+        print('-----------------')
+        score +=1
+
+        #opponent randomly plays new pythonmon if score is less than 3
+        if score < 3:
+            pythonmon = sample(cpu_hand.cards,1)[0]
+            cpu_hand.cards.remove(pythonmon)
+            print(f'Opponent plays [bold]{pythonmon.name}![/bold]')
+            play_file('sounds/'+pythonmon.sound)
+            print('-----------------')
+    return pythonmon,score
+
+def check_player_fainted(pythonmon,hand,cpu_score):
+    if pythonmon.hp < 1:
+        print('-----------------')
+        print(f'[bold]{pythonmon.name} fainted...[/bold]')
+        play_file('sounds/'+pythonmon.sound)
+        print('-----------------')
+        cpu_score +=1
+
+        #if cpu score is less than 3, player chooses a new pythonmon to play from hand
+        if cpu_score < 3:
+            print(hand)
+            pythonmon = select_pythonmon(hand)
+    return pythonmon,cpu_score
+
+def cpu_turn(opponent,player):
+    #opponent pythonmon charges energy if not enough energy to attack
+    print('-----------------')
+    print('[red bold]Opponent Pythonmon: [/red bold]')
+    if opponent.energy < opponent.atk_energy:
+        opponent.charge()
+
+    #call attack method on player
+    elif opponent.energy == opponent.atk_energy:
+        opponent.attack(player)
 
 
 def main():
@@ -167,139 +263,25 @@ def main():
         if check_game_over(score, cpu_score):
             break
         
-        #PLAYER turn
-        #display active and opponent active cards
-        print('[green]YOUR ACTIVE CARD:[/green]')
-        print(active_pythonmon)
-        print('[red]OPPONENT ACTIVE CARD[/red]')
-        print(cpu_pythonmon)
+        #execute player turn
+        game_over,active_pythonmon = player_turn(active_pythonmon, cpu_pythonmon, hand, deck)
 
-        #get turn command from player
-        command = input('[C]harge Energy, [A]ttack, [V]iew Hand, [S]witch Pythonmon, [D]raw Card or [F]orfeit: ')
-
-        #charge active pythonmon energy
-        if command.lower() in ['c', 'charge', 'charge energy']:
-            print('-----------------')
-            print(active_pythonmon.charge())
-            play_file('sounds/fx073.mp3')
-            print('-----------------')
-
-        #call attack method and return attack data
-        elif command.lower() in ['a', 'atk', 'attack']:
-            print('-----------------')
-            attack = active_pythonmon.attack(cpu_pythonmon)
-            print(f'[{active_pythonmon.color}]{attack['message']}[/{active_pythonmon.color}]')
-
-            #if attack was successful, attack opponent pythonmon
-            if attack['dmg']:
-                cpu_pythonmon.hp -= attack['dmg']
-
-                #display message if attack is super effective
-                if attack['effective']:
-                    print(attack['effective'])
-                play_file('sounds/'+active_pythonmon.sound)
-            print('-----------------')
-
-        #show current hand
-        elif command.lower() in ('v', 'view', 'view hand'):
-            print('[green]CURRENT HAND[/green]')
-            print(hand)
-        
-        #switch active pythonmon
-        elif command.lower() in ('s', 'switch', 'switch pythonmon'):
-            print(f'[bold]{active_pythonmon.name} return![/bold]')
-            hand.cards.append(active_pythonmon)
-            active_pythonmon = None
-            print('[green]CURRENT HAND[/green]')
-            print(hand)
-            while active_pythonmon is None:
-                active_pythonmon = select_pythonmon(hand)
-
-        #draw card from deck and add to hand if hand is less than 5 cards currently
-        elif command.lower() in ['d', 'draw', 'draw card']:
-            if len(hand.cards) < 5:
-                deck.deal_card(hand)
-                print('-----------------')
-                print(f'Drew {hand.cards[-1].name} - {hand.cards[-1]._type} type Pythonmon')
-                print('-----------------')
-            else:
-                print('-----------------')
-                print('[red]Cannot have more than 5 cards in hand![/red]')
-                print('-----------------')
-        
-        #forfeit game
-        elif command.lower() in ['f', 'forfeit']:
-            print('-----------------')
-            print('You lose!')
-            print('-----------------')
-            game_over = True
+        #quit game if game over
+        if game_over:
             break
-        
-        #check if opponent pythonmon has fainted, if true, add 1 to player score
-        if cpu_pythonmon.hp < 1:
-            print('-----------------')
-            print(f'[bold]{cpu_pythonmon.name} fainted...[/bold]')
-            play_file('sounds/'+cpu_pythonmon.sound)
-            print('-----------------')
-            score +=1
 
-            #opponent randomly plays new pythonmon if score is less than 3
-            if score < 3:
-                cpu_pythonmon = sample(cpu_hand.cards,1)[0]
-                cpu_hand.cards.remove(cpu_pythonmon)
-                print(f'Opponent plays [bold]{cpu_pythonmon.name}![/bold]')
-                play_file('sounds/'+cpu_pythonmon.sound)
-                print('-----------------')
+        #check if opponent pythonmon has fainted, if true, add 1 to player score
+        cpu_pythonmon, score = check_cpu_fainted(cpu_pythonmon,cpu_hand,score)
         
         #check game over conditions before CPU turn, end game if true
         if check_game_over(score, cpu_score):
             break
 
-        #CPU turn
-        #opponent pythonmon charges energy if not enough energy to attack
-        if cpu_pythonmon.energy < cpu_pythonmon.atk_energy:
-            print('-----------------')
-            print(f'[red bold]Opponent Pythonmon:[/red bold] {cpu_pythonmon.charge()}')
-            print('-----------------')
-            play_file('sounds/fx073.mp3')
-
-        #call attack method and return attack data
-        elif cpu_pythonmon.energy == cpu_pythonmon.atk_energy:
-            print('-----------------')
-            attack = cpu_pythonmon.attack(active_pythonmon)
-            print(f'[red bold]Opponent Pythonmon: [/red bold][{cpu_pythonmon.color}]{attack['message']}[/{cpu_pythonmon.color}]')
-
-            #if attack was successful, attack active player pythonmon
-            if attack['dmg']:
-                active_pythonmon.hp -= attack['dmg']
-
-                #display message if attack is super effective
-                if attack['effective']:
-                    print(attack['effective'])
-                play_file('sounds/'+cpu_pythonmon.sound)
-            print('-----------------')
+        #execute cpu turn
+        cpu_turn(cpu_pythonmon,active_pythonmon)
 
         #check if player active pythonmon has fainted, if true, add 1 to cpu score
-        if active_pythonmon.hp < 1:
-            print('-----------------')
-            print(f'[bold]{active_pythonmon.name} fainted...[/bold]')
-            play_file('sounds/'+active_pythonmon.sound)
-            print('-----------------')
-            cpu_score +=1
-
-            #if cpu score is less than 3, player chooses a new pythonmon to play from hand
-            active_pythonmon = None
-            if cpu_score < 3:
-                print(hand)
-                while active_pythonmon is None:
-                    active_pythonmon = hand.play_card(input('Choose a Pythonmon to play: '))
-                    try:
-                        print('-----------------')
-                        print(f'You play [bold]{active_pythonmon.name}![/bold]')
-                        print('-----------------')
-                        play_file('sounds/'+active_pythonmon.sound,block=False)
-                    except:
-                        continue
+        active_pythonmon, cpu_score = check_player_fainted(active_pythonmon, hand,cpu_score)
 
 if __name__ == "__main__":
     main()
