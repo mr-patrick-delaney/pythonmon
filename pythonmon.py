@@ -136,6 +136,19 @@ cpu_color = cpu_pythonmon.get_color()
 color = active_pythonmon.get_color()
 
 while game_over == False:
+
+    if score == 3:
+        print('-----------------')
+        print('You WIN!')
+        print('-----------------')
+        break
+
+    elif cpu_score == 3:
+        print('-----------------')
+        print('You lose')
+        print('-----------------')
+        break
+
     print('[green]YOUR ACTIVE CARD:[/green]')
     print(active_pythonmon)
     print('[red]OPPONENT ACTIVE CARD[/red]')
@@ -215,7 +228,24 @@ while game_over == False:
             play_file('sounds/'+cpu_pythonmon._sound)
         print('-----------------')
 
-    #add in faiting condition for active pythonmon 
+    if active_pythonmon._hp < 1:
+        print('-----------------')
+        print(f'[bold]{active_pythonmon._name} fainted...[/bold]')
+        play_file('sounds/'+active_pythonmon._sound)
+        print('-----------------')
+        cpu_score +=1
+        active_pythonmon = None
+        if cpu_score < 3:
+            print(hand)
+            while active_pythonmon is None:
+                active_pythonmon = hand.play_card(input('Choose a Pythonmon to play: '))
+                try:
+                    print('-----------------')
+                    print(f'You play [bold]{active_pythonmon._name}![/bold]')
+                    print('-----------------')
+                    play_file('sounds/'+active_pythonmon._sound,block=False)
+                except:
+                    continue
 
     if score == 3:
         print('-----------------')
