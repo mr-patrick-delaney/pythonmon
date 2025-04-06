@@ -51,10 +51,10 @@ class Pythonmon():
             attack['message'] = f'{self._name} used {self._atk_name}!'
             
             if strengths[self._type] == opponent._type:
-                attack['dmg'] = self._atk_dmg*2
+                attack['dmg'] = (self._atk_dmg*2) - opponent._defense
                 attack['effective'] = '[purple bold]It\'s super effective![/purple bold]'
             else:
-                attack['dmg'] = self._atk_dmg
+                attack['dmg'] = self._atk_dmg - opponent._defense
         else:
             attack['message'] = '[yellow]Insufficient energy![/yellow]'
         
