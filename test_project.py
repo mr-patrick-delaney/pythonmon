@@ -1,5 +1,5 @@
-from project import Deck, Hand, Pythonmon
-from project import initialise_game, select_pythonmon, check_game_over, switch_pythonmon, check_cpu_fainted, check_player_fainted
+from pythonmon import Deck, Hand, Pythonmon
+from pythonmon import initialise_game, select_pythonmon, check_game_over, switch_pythonmon, check_cpu_fainted, check_player_fainted
 from unittest.mock import patch
 
 
