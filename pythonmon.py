@@ -12,7 +12,7 @@ class Pythonmon():
 
     Attributes:
         name (str): The Pythonmon's name.
-        _type (str): The Pythonmon's elemental type ('Fire', 'Water', or 'Grass').
+        type (str): The Pythonmon's elemental type ('Fire', 'Water', or 'Grass').
         hp (int): The Pythonmon's current health points.
         _defense (int): The defense value that reduces incoming damage.
         atk_name (str): The name of the Pythonmon's attack move.
@@ -28,7 +28,7 @@ class Pythonmon():
 
     def __init__(self, name:str, type:str, hp:int, defense:int, atk_name:str, atk_dmg:int, atk_energy:int, sound:str):
         self.name = name
-        self._type = type
+        self.type = type
         self.hp = hp
         self._defense = defense
         self.atk_name = atk_name
@@ -41,7 +41,7 @@ class Pythonmon():
     def __str__(self):
         table = []
         headers = ['Name', 'Type', 'HP', 'Def', 'Attack', 'Dmg', 'Atk Energy', 'Energy']
-        table.append([self.name, self._type, self.hp, self._defense, self.atk_name, self._atk_dmg, self.atk_energy,self.energy])
+        table.append([self.name, self.type, self.hp, self._defense, self.atk_name, self._atk_dmg, self.atk_energy,self.energy])
         return tabulate(table,headers=headers,tablefmt='grid')
 
     def charge(self):
@@ -80,7 +80,7 @@ class Pythonmon():
             print('-----------------')
             print(f'[{self.color}]{self.name} used {self.atk_name}![/{self.color}]')
             
-            if strengths[self._type] == opponent._type:
+            if strengths[self.type] == opponent.type:
                 opponent.hp -= (self._atk_dmg*2) - opponent._defense
                 print('[purple bold]It\'s super effective![/purple bold]')
             else:
@@ -102,7 +102,7 @@ class Pythonmon():
             'Water': 'blue',
             'Grass': 'green'
         }
-        return color_types[self._type]
+        return color_types[self.type]
 
 
 class Deck():
@@ -175,7 +175,7 @@ class Hand():
         table = []
         headers = ['Name', 'Type', 'HP', 'Def', 'Attack', 'Dmg', 'Atk Energy']
         for card in self.cards:
-            table.append([card.name, card._type, card.hp, card._defense, card.atk_name, card._atk_dmg, card.atk_energy])
+            table.append([card.name, card.type, card.hp, card._defense, card.atk_name, card._atk_dmg, card.atk_energy])
         return tabulate(table,headers=headers,tablefmt='grid')
 
     def play_card(self,name:str) -> Pythonmon:
@@ -334,12 +334,13 @@ def player_turn(player:Pythonmon, opponent:Pythonmon, hand:Hand, deck:Deck) -> t
     #else return False to game_over to continue the game
     return False, player
 
-def check_cpu_fainted(cpu_pythonmon:Pythonmon, player_pythonmon, cpu_hand:Hand,score:int) -> tuple[Pythonmon,int]:
+def check_cpu_fainted(cpu_pythonmon:Pythonmon, player_pythonmon:Pythonmon, cpu_hand:Hand,score:int) -> tuple[Pythonmon,int]:
     """
     Checks if the CPU's active Pythonmon has fainted (HP < 1). Increments the player's score if true.
 
     Args:
-        pythonmon (Pythonmon): The CPU's current active Pythonmon.
+        cpu_pythonmon (Pythonmon): The CPU's current active Pythonmon.
+        player_pythonmon (Pythonmon): The player's current active Pythonmon.
         cpu_hand (Hand): The CPU's hand.
         score (int): The player's current score.
 
@@ -356,9 +357,8 @@ def check_cpu_fainted(cpu_pythonmon:Pythonmon, player_pythonmon, cpu_hand:Hand,s
         print('-----------------')
         score +=1
 
-        #opponent randomly plays new pythonmon if score is less than 3
+        #opponent plays new pythonmon based on elemental weakness of player pythonmon - if score is less than 3
         if score < 3:
-            print(cpu_hand)
             cpu_pythonmon = cpu_select_pythonmon(player_pythonmon, cpu_hand)
             cpu_hand.cards.remove(cpu_pythonmon)
             print(f'Opponent plays [bold]{cpu_pythonmon.name}![/bold]')
@@ -413,18 +413,37 @@ def check_player_fainted(pythonmon:Pythonmon,hand:Hand,cpu_score:int) -> tuple[P
             pythonmon = select_pythonmon(hand)
     return pythonmon,cpu_score
 
-def cpu_select_pythonmon(player_pythonmon, cpu_hand):
+def cpu_select_pythonmon(player_pythonmon:Pythonmon, cpu_hand:Hand) -> Pythonmon:
+    """
+    CPU selects a Pythonmon from its hand - based on the elemental strength against current player Pythonmon.
+    If no suitable card in hand, CPU chooses a card randomly from hand.
+
+    Args:
+        pythonmon (Pythonmon): The player's current active Pythonmon.
+        hand (Hand): The player's current hand.
+
+    Returns:
+        Pythonmon: The CPU's new active Pythonmon.
+    """
+
     weaknesses = {
         'Fire': 'Water',
         'Water': 'Grass',
         'Grass': 'Fire'
     }
-    element = weaknesses[player_pythonmon._type]
 
+    element = weaknesses[player_pythonmon.type]
+
+    #selects pythonmon based on elemental strength to player pythonmon
     for card in cpu_hand.cards:
-        if card._type == element:
+        if card.type == element:
             return card
     
+    #if no card in hand with elemental strength, chooses card with same element as player
+    for card in cpu_hand.cards:
+        if card.type == player_pythonmon.type:
+            return card
+    #if no card in hand with same element of player, chooses a card randomly
     return sample(cpu_hand.cards,1)[0]
 
 def main():
