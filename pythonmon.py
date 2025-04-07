@@ -334,7 +334,7 @@ def player_turn(player:Pythonmon, opponent:Pythonmon, hand:Hand, deck:Deck) -> t
     #else return False to game_over to continue the game
     return False, player
 
-def check_cpu_fainted(pythonmon:Pythonmon,cpu_hand:Hand,score:int) -> tuple[Pythonmon,int]:
+def check_cpu_fainted(cpu_pythonmon:Pythonmon, player_pythonmon, cpu_hand:Hand,score:int) -> tuple[Pythonmon,int]:
     """
     Checks if the CPU's active Pythonmon has fainted (HP < 1). Increments the player's score if true.
 
@@ -349,21 +349,22 @@ def check_cpu_fainted(pythonmon:Pythonmon,cpu_hand:Hand,score:int) -> tuple[Pyth
             int: The updated player score.
     """
         
-    if pythonmon.hp < 1:
+    if cpu_pythonmon.hp < 1:
         print('-----------------')
-        print(f'[bold]{pythonmon.name} fainted...[/bold]')
-        play_file('sounds/'+pythonmon.sound)
+        print(f'[bold]{cpu_pythonmon.name} fainted...[/bold]')
+        play_file('sounds/'+cpu_pythonmon.sound)
         print('-----------------')
         score +=1
 
         #opponent randomly plays new pythonmon if score is less than 3
         if score < 3:
-            pythonmon = sample(cpu_hand.cards,1)[0]
-            cpu_hand.cards.remove(pythonmon)
-            print(f'Opponent plays [bold]{pythonmon.name}![/bold]')
-            play_file('sounds/'+pythonmon.sound)
+            print(cpu_hand)
+            cpu_pythonmon = cpu_select_pythonmon(player_pythonmon, cpu_hand)
+            cpu_hand.cards.remove(cpu_pythonmon)
+            print(f'Opponent plays [bold]{cpu_pythonmon.name}![/bold]')
+            play_file('sounds/'+cpu_pythonmon.sound)
             print('-----------------')
-    return pythonmon,score
+    return cpu_pythonmon,score
 
 def cpu_turn(opponent:Pythonmon,player:Pythonmon):
     """
@@ -412,6 +413,19 @@ def check_player_fainted(pythonmon:Pythonmon,hand:Hand,cpu_score:int) -> tuple[P
             pythonmon = select_pythonmon(hand)
     return pythonmon,cpu_score
 
+def cpu_select_pythonmon(player_pythonmon, cpu_hand):
+    weaknesses = {
+        'Fire': 'Water',
+        'Water': 'Grass',
+        'Grass': 'Fire'
+    }
+    element = weaknesses[player_pythonmon._type]
+
+    for card in cpu_hand.cards:
+        if card._type == element:
+            return card
+    
+    return sample(cpu_hand.cards,1)[0]
 
 def main():
     """
@@ -456,7 +470,7 @@ def main():
             break
 
         #check if opponent pythonmon has fainted, if true, add 1 to player score
-        cpu_pythonmon, score = check_cpu_fainted(cpu_pythonmon,cpu_hand,score)
+        cpu_pythonmon, score = check_cpu_fainted(cpu_pythonmon, active_pythonmon, cpu_hand, score)
         
         #check game over conditions before CPU turn, end game if true
         if check_game_over(score, cpu_score):
